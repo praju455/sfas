@@ -1,0 +1,10 @@
+{
+  "title": "Smart Farming Advisory System",
+  "subtitle": "Data-driven smart farming for Indian farmers",
+  "crop": "Crop name",
+  "soil": "Soil type",
+  "season": "Season",
+  "button": "Get Advisory",
+  "weather": "Weather Information",
+  "download": "Download PDF Report"
+}
