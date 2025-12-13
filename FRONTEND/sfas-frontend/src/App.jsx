@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
 
 import Slidebar from "./components/Slidebar";
 import Dashboard from "./pages/Dashboard";
@@ -6,7 +7,21 @@ import Crops from "./pages/Crops";
 import Analytics from "./pages/Analytics";
 import WeatherPage from "./pages/WeatherPage";
 
+import { getAnalytics } from "./api";
+
 export default function App() {
+
+  // 🔹 Backend API call
+  useEffect(() => {
+    getAnalytics()
+      .then(data => {
+        console.log("Analytics data from backend:", data);
+      })
+      .catch(err => {
+        console.error("Backend API error:", err);
+      });
+  }, []);
+
   return (
     <BrowserRouter>
       <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -24,3 +39,4 @@ export default function App() {
     </BrowserRouter>
   );
 }
+
