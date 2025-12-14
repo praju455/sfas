@@ -1,24 +1,23 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from pymongo import MongoClient
-
-
+import io
 
 app = Flask(__name__)
 CORS(app)
 
-# ✅ MongoDB connection (NO SPACES)
+# ================== MONGODB ==================
 client = MongoClient(
     "mongodb+srv://prajwal:Praju%402006@sfas.hd7dxqp.mongodb.net/sfas?retryWrites=true&w=majority"
 )
 db = client["sfas"]
 
-# ---------------- HOME ----------------
+# ================== HOME ==================
 @app.route("/", methods=["GET"])
 def home():
     return jsonify({"status": "Backend working"})
 
-# ---------------- ADVISORY API ----------------
+# ================== ADVISORY ==================
 from ml_model import predict_yield
 
 @app.route("/api/advisory", methods=["POST"])
@@ -36,7 +35,6 @@ def advisory():
     elif location == "Punjab":
         crop = "Wheat"
 
-    # ✅ ML prediction AFTER final crop
     ml_score = predict_yield(crop, soil, season, location)
 
     advisory_data = {
@@ -59,10 +57,7 @@ def advisory():
 
     return jsonify(advisory_data)
 
-
-
-
-# ---------------- ANALYTICS API ----------------
+# ================== ANALYTICS ==================
 @app.route("/api/analytics", methods=["GET"])
 def analytics():
     pipeline = [
@@ -77,19 +72,14 @@ def analytics():
     results = list(db.advisories.aggregate(pipeline))
 
     analytics_data = [
-        {
-            "crop": item["_id"],
-            "count": item["count"]
-        }
+        {"crop": item["_id"], "count": item["count"]}
         for item in results
     ]
 
     return jsonify(analytics_data)
 
-
-    
-
-@app.route("/api/weather")
+# ================== WEATHER ==================
+@app.route("/api/weather", methods=["GET"])
 def weather():
     return jsonify({
         "temp": 29,
@@ -97,8 +87,26 @@ def weather():
         "humidity": 65
     })
 
+# ================== PDF REPORT ==================
+@app.route("/api/report", methods=["GET"])
+def report():
+    content = (
+        "SFAS – Smart Farming Advisory System\n\n"
+        "Report Generated Successfully\n\n"
+        "Thank you for using SFAS."
+    )
 
+    file = io.BytesIO()
+    file.write(content.encode("utf-8"))
+    file.seek(0)
 
-# ---------------- RUN SERVER ----------------
+    return send_file(
+        file,
+        as_attachment=True,
+        download_name="SFAS_Report.txt",  # you can change to .pdf later
+        mimetype="application/octet-stream"
+    )
+
+# ================== LOCAL RUN ==================
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
