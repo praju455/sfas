@@ -4,12 +4,13 @@ import ExplanationModal from "./ExplanationModal";
 export default function AdvisoryCard({ result }) {
   const [open, setOpen] = useState(false);
 
-  if (!result) return null;
+  if (!result || result.ml_prediction === undefined) return null;
 
-  const confidence =
-    result.ml_prediction !== undefined
-      ? (result.ml_prediction * 100).toFixed(2)
-      : null;
+  // ✅ Numeric confidence (for logic & bar)
+  const confidenceNum = Math.round(result.ml_prediction * 100);
+
+  // ✅ Display value
+  const confidenceText = confidenceNum.toFixed(2);
 
   return (
     <div className="mt-6 bg-green-50 dark:bg-green-900/20 p-6 rounded-2xl shadow-sm">
@@ -30,29 +31,48 @@ export default function AdvisoryCard({ result }) {
         </div>
       )}
 
-      {/* ML RESULT */}
-      {confidence && (
-        <div className="mt-4 p-4 bg-green-100 rounded-lg">
-          <h3 className="font-semibold text-green-800 mb-2">
-            🤖 ML Prediction
-          </h3>
+      {/* ================= ML CONFIDENCE ================= */}
+      <div className="mt-4 p-4 bg-green-100 rounded-lg">
+        <h3 className="font-semibold text-green-800 mb-2">
+          🤖 ML Prediction Confidence
+        </h3>
 
-          <p>
-            <strong>Confidence Score:</strong>{" "}
-            <span className={
-              confidence > 80 ? "text-green-700" : "text-yellow-700"
-            }>
-              {confidence}%
-            </span>
-          </p>
-
-          <p>
-            <strong>Risk Level:</strong>{" "}
-            {confidence > 80 ? "Low" : "Moderate"}
-          </p>
+        {/* Progress Bar */}
+        <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
+          <div
+            className={`h-3 rounded-full transition-all duration-500
+              ${
+                confidenceNum > 80
+                  ? "bg-green-600"
+                  : confidenceNum > 60
+                  ? "bg-yellow-500"
+                  : "bg-red-500"
+              }
+            `}
+            style={{ width: `${confidenceNum}%` }}
+          />
         </div>
-      )}
 
+        <p className="text-sm">
+          <strong>Confidence:</strong>{" "}
+          <span className={
+            confidenceNum > 80 ? "text-green-700" : "text-yellow-700"
+          }>
+            {confidenceText}%
+          </span>
+        </p>
+
+        <p className="text-sm">
+          <strong>Risk Level:</strong>{" "}
+          {confidenceNum > 80
+            ? "Low"
+            : confidenceNum > 60
+            ? "Moderate"
+            : "High"}
+        </p>
+      </div>
+
+      {/* Explanation */}
       <button
         onClick={() => setOpen(true)}
         className="text-sm text-green-600 hover:underline mt-4"
