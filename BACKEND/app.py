@@ -13,10 +13,9 @@ app = Flask(__name__)
 CORS(app)
 
 # ================== MONGODB ==================
-client = MongoClient(
-    "mongodb+srv://prajwal:Praju%402006@sfas.hd7dxqp.mongodb.net/sfas?retryWrites=true&w=majority"
-)
+client = MongoClient(os.getenv("MONGODB_URI"))
 db = client["sfas"]
+
 
 # ================== HOME ==================
 @app.route("/", methods=["GET"])
