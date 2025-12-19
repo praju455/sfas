@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { getAdvisory } from "./services/api";
+import { getAdvisory } from "import { getAdvisory } from "../services/api";
+";
 import { Wheat, Mountain, Calendar, MapPin } from "lucide-react";
 
 export default function AdvisoryForm({ setResult, setLocation }) {
