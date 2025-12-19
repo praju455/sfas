@@ -92,15 +92,25 @@ export default function AdvisoryForm({ setResult }) {
         </div>
 
 {/* Location */}
-<select
-  value={location}
-  onChange={(e) => setLocation(e.target.value)}
-  className="w-full p-2 border rounded"
->
-  <option value="">Select Location</option>
-  <option value="Karnataka">Karnataka</option>
-  <option value="Punjab">Punjab</option>
-</select>
+<div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700
+                border border-gray-200 dark:border-gray-600
+                rounded-xl px-4 py-3
+                focus-within:ring-1 focus-within:ring-green-500">
+  <select
+    className="flex-1 bg-transparent outline-none
+               text-gray-800 dark:text-gray-100"
+    value={form.location}
+    onChange={(e) =>
+      setForm({ ...form, location: e.target.value })
+    }
+    required
+  >
+    <option value="">Select Location</option>
+    <option value="Karnataka">Karnataka</option>
+    <option value="Punjab">Punjab</option>
+  </select>
+</div>
+
 
 
         {/* Submit */}
