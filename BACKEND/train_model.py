@@ -4,8 +4,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 import pickle
 
-# Load dataset
-data = pd.read_csv("Crop_recommendation.csv")
+# Load dataset (FIXED filename)
+data = pd.read_csv("crop_recommendation.csv")
 
 # Features & target
 X = data.drop("label", axis=1)
@@ -31,4 +31,3 @@ print("Model Accuracy:", accuracy)
 pickle.dump(model, open("crop_model.pkl", "wb"))
 
 print("✅ Model trained & saved as crop_model.pkl")
-
