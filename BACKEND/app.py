@@ -54,23 +54,37 @@ def advisory():
     return jsonify(advisory_data)
 
 # ================== ANALYTICS ==================
-@app.route("/api/analytics")
+# ================== ANALYTICS ==================
+@app.route("/api/analytics", methods=["GET"])
 def analytics():
-    pipeline = [
-        {
-            "$group": {
-                "_id": "$crop",
-                "avgYield": { "$avg": "$ml_prediction.expected_yield" }
+    try:
+        # Check Mongo connection
+        if db is None:
+            return jsonify([])
+
+        pipeline = [
+            {
+                "$group": {
+                    "_id": "$crop",
+                    "count": {"$sum": 1}
+                }
             }
-        }
-    ]
+        ]
 
-    data = list(db.advisories.aggregate(pipeline))
+        results = list(db.advisories.aggregate(pipeline))
 
-    return jsonify([
-        { "crop": d["_id"], "avgYield": round(d["avgYield"], 2) }
-        for d in data
-    ])
+        analytics_data = [
+            {"crop": item["_id"], "count": item["count"]}
+            for item in results
+        ]
+
+        return jsonify(analytics_data)
+
+    except Exception as e:
+        print("Analytics error:", e)
+        # Return empty list instead of 500
+        return jsonify([])
+
 
 
 # ================== WEATHER ==================
