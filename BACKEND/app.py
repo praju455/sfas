@@ -27,28 +27,19 @@ def advisory():
     crop = data.get("crop")
     soil = data.get("soil")
     season = data.get("season")
-    location = data.get("location", "India")
+    location = data.get("location")
 
-    # Location override
-    if location == "Karnataka":
-        crop = "Ragi"
-    elif location == "Punjab":
-        crop = "Wheat"
-
-    ml_score = predict_yield(crop, soil, season, location)
+    ml_yield = predict_yield(crop, soil, season, location)
 
     advisory_data = {
         "crop": crop,
         "soil": soil,
         "season": season,
         "location": location,
-        "recommendation": f"Grow {crop}",
-        "ml_prediction": ml_score,
-        "explanation": f"{crop} suits {soil} soil in {season} season at {location}",
-        "benefits": {
-            "yield": ml_score,
-            "cost": 30,
-            "loss": 15
+        "recommendation": f"Grow {crop} with proper irrigation",
+        "ml_prediction": {
+            "expected_yield": ml_yield,
+            "unit": "quintal/acre"
         }
     }
 
