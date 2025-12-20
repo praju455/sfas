@@ -6,10 +6,8 @@ export default function AdvisoryCard({ result }) {
 
   if (!result || result.ml_prediction === undefined) return null;
 
-  // ✅ Numeric confidence (for logic & bar)
+  // Numeric confidence
   const confidenceNum = Math.round(result.ml_prediction * 100);
-
-  // ✅ Display value
   const confidenceText = confidenceNum.toFixed(2);
 
   return (
@@ -37,7 +35,6 @@ export default function AdvisoryCard({ result }) {
           🤖 ML Prediction Confidence
         </h3>
 
-        {/* Progress Bar */}
         <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
           <div
             className={`h-3 rounded-full transition-all duration-500
@@ -55,9 +52,15 @@ export default function AdvisoryCard({ result }) {
 
         <p className="text-sm">
           <strong>Confidence:</strong>{" "}
-          <span className={
-            confidenceNum > 80 ? "text-green-700" : "text-yellow-700"
-          }>
+          <span
+            className={
+              confidenceNum > 80
+                ? "text-green-700"
+                : confidenceNum > 60
+                ? "text-yellow-700"
+                : "text-red-700"
+            }
+          >
             {confidenceText}%
           </span>
         </p>
@@ -71,6 +74,33 @@ export default function AdvisoryCard({ result }) {
             : "High"}
         </p>
       </div>
+
+      {/* ================= FEATURE IMPORTANCE ================= */}
+      {result.feature_importance && (
+        <div className="mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg">
+          <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">
+            🔍 Feature Importance
+          </h3>
+
+          {Object.entries(result.feature_importance).map(
+            ([feature, value]) => (
+              <div key={feature} className="mb-2">
+                <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300">
+                  <span>{feature}</span>
+                  <span>{Math.round(value * 100)}%</span>
+                </div>
+
+                <div className="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded">
+                  <div
+                    className="h-2 bg-green-600 rounded"
+                    style={{ width: `${value * 100}%` }}
+                  />
+                </div>
+              </div>
+            )
+          )}
+        </div>
+      )}
 
       {/* Explanation */}
       <button
