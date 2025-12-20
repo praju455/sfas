@@ -11,178 +11,89 @@ import {
   Pie,
   Cell,
 } from "recharts";
-
 import { getAnalytics } from "../services/api";
 
 export default function Charts() {
-  const [data, setData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
+  const [rawData, setRawData] = useState([]);
   const [selectedCrop, setSelectedCrop] = useState("All");
   const [view, setView] = useState("bar");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     getAnalytics()
-      .then((res) => {
-        setData(res);
-        setFilteredData(res);
-      })
-      .catch((err) => {
-        console.error("Analytics error:", err);
-        setError("Failed to load analytics data");
-      })
+      .then((res) => setRawData(res))
       .finally(() => setLoading(false));
   }, []);
-
-  /* ---------- FILTER ---------- */
-  const crops = ["All", ...new Set(data.map((d) => d.crop))];
-
-  useEffect(() => {
-    if (selectedCrop === "All") {
-      setFilteredData(data);
-    } else {
-      setFilteredData(data.filter((d) => d.crop === selectedCrop));
-    }
-  }, [selectedCrop, data]);
-
-  /* ---------- STATES ---------- */
 
   if (loading) {
     return (
       <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow">
-        <p className="text-gray-500 animate-pulse">
-          Loading analytics...
-        </p>
+        Loading analytics...
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow">
-        <p className="text-red-500">{error}</p>
-      </div>
-    );
-  }
+  /* ---------- FILTER ---------- */
+  const crops = ["All", ...new Set(rawData.map(d => d.crop))];
 
-  if (data.length === 0) {
-    return (
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow">
-        <p className="text-gray-500">
-          No analytics data available yet
-        </p>
-      </div>
-    );
-  }
+  const filtered =
+    selectedCrop === "All"
+      ? rawData
+      : rawData.filter(d => d.crop === selectedCrop);
 
-  /* ---------- UI ---------- */
+  /* ---------- PIE DATA ---------- */
+  const pieData = Object.values(
+    filtered.reduce((acc, cur) => {
+      acc[cur.crop] = acc[cur.crop] || { crop: cur.crop, count: 0 };
+      acc[cur.crop].count += cur.count;
+      return acc;
+    }, {})
+  );
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-      <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">
-        📊 Advisory Analytics
+      <h2 className="text-lg font-semibold mb-4">
+        📊 Date-wise Advisory Analytics
       </h2>
 
       {/* CONTROLS */}
-      <div className="flex flex-wrap gap-3 mb-4 items-center">
-        {/* Crop Filter */}
+      <div className="flex gap-3 mb-4 items-center">
         <select
           value={selectedCrop}
           onChange={(e) => setSelectedCrop(e.target.value)}
-          className="px-3 py-1 border rounded text-sm"
+          className="border px-3 py-1 rounded"
         >
-          {crops.map((crop) => (
-            <option key={crop} value={crop}>
-              {crop}
-            </option>
+          {crops.map(c => (
+            <option key={c}>{c}</option>
           ))}
         </select>
 
-        {/* View Toggle */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => setView("bar")}
-            className={`px-3 py-1 rounded text-sm ${
-              view === "bar"
-                ? "bg-green-600 text-white"
-                : "bg-gray-200"
-            }`}
-          >
-            Bar
-          </button>
-
-          <button
-            onClick={() => setView("pie")}
-            className={`px-3 py-1 rounded text-sm ${
-              view === "pie"
-                ? "bg-green-600 text-white"
-                : "bg-gray-200"
-            }`}
-          >
-            Pie
-          </button>
-        </div>
+        <button onClick={() => setView("bar")}>Bar</button>
+        <button onClick={() => setView("pie")}>Pie</button>
       </div>
 
-      {/* CHART */}
       <ResponsiveContainer width="100%" height={280}>
         {view === "bar" ? (
-          <BarChart
-            data={filteredData}
-            margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
-          >
+          <BarChart data={filtered}>
             <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-
-            <XAxis
-              dataKey="crop"
-              tick={{ fill: "#6b7280", fontSize: 12 }}
-            />
-
-            <YAxis
-              allowDecimals={false}
-              tick={{ fill: "#6b7280", fontSize: 12 }}
-              label={{
-                value: "Number of Advisories",
-                angle: -90,
-                position: "insideLeft",
-                fill: "#6b7280",
-              }}
-            />
-
-            <Tooltip
-              cursor={{ fill: "rgba(22, 163, 74, 0.1)" }}
-              contentStyle={{
-                borderRadius: "8px",
-                border: "none",
-                backgroundColor: "#f0fdf4",
-              }}
-            />
-
-            <Bar
-              dataKey="count"
-              fill="#16a34a"
-              radius={[6, 6, 0, 0]}
-              animationDuration={800}
-            />
+            <XAxis dataKey="date" />
+            <YAxis allowDecimals={false} />
+            <Tooltip />
+            <Bar dataKey="count" fill="#16a34a" />
           </BarChart>
         ) : (
           <PieChart>
             <Pie
-              data={filteredData}
+              data={pieData}
               dataKey="count"
               nameKey="crop"
               outerRadius={90}
               label
             >
-              {filteredData.map((_, index) => (
+              {pieData.map((_, i) => (
                 <Cell
-                  key={index}
-                  fill={
-                    ["#16a34a", "#22c55e", "#4ade80", "#86efac"][
-                      index % 4
-                    ]
-                  }
+                  key={i}
+                  fill={["#16a34a", "#22c55e", "#4ade80"][i % 3]}
                 />
               ))}
             </Pie>
