@@ -18,7 +18,8 @@ import {
 
 export default function Dashboard() {
   const [result, setResult] = useState(null);
-  const [location, setLocation] = useState("");   // ✅ ADDED
+  const [location, setLocation] = useState("");
+  const [weatherData, setWeatherData] = useState(null); // ✅ NEW
   const { mode } = useFarmerMode();
 
   return (
@@ -95,17 +96,22 @@ export default function Dashboard() {
               <Charts />
 
               <div className="mt-6">
-                <Weather location={location} />   {/* ✅ FIXED */}
+                <Weather
+                  location={location}
+                  onWeatherData={setWeatherData}   // ✅ CONNECTED
+                />
               </div>
             </div>
           )}
 
           {/* ADVISORY — ALL FARMERS */}
           <div className="bg-white dark:bg-gray-800 p-7 rounded-2xl shadow-sm space-y-6">
-           <AdvisoryForm
-  setResult={setResult}
-  setLocation={setLocation}
-/>
+
+            <AdvisoryForm
+              setResult={setResult}
+              setLocation={setLocation}
+              weatherData={weatherData}          // ✅ CONNECTED
+            />
 
             {result && <AdvisoryCard result={result} />}
 
@@ -118,3 +124,4 @@ export default function Dashboard() {
     </main>
   );
 }
+
